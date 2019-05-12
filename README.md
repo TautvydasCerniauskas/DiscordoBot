@@ -1,10 +1,10 @@
 # Repo for simple discord bot
 
-# Wanted to play a little bit with the current discord channel and add command line functionality
+## Wanted to play a little bit with the current discord channel and add command line functionality
 
-# Currently only takes 3 simple commands
+### Currently only takes 3 simple commands
 
-# TODO 
+### TODO 
 * [] Shows games played by the users
 * [] Ban user/s
 * [] Show user details
