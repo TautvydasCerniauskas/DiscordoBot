@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
@@ -33,10 +34,11 @@ func main() {
 	// for i := 0; i < len(messages); i++ {
 	// 	fmt.Println(messages[i].Content)
 	// }
-	getUserStatus(d)
-	for i, u := range d.State.Presences {
-		fmt.Println(i, u)
-	}
+	getUsers(d)
+	// for _, i := range users {
+	// 	fmt.Println(i)
+	// }
+	getStatus(d)
 	fmt.Println("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -63,17 +65,37 @@ func getChannels(s *discordgo.Session) []*discordgo.Channel {
 	return nil
 }
 
-func listMessages(s *discordgo.Session, m *discordgo.MessageCreate, channelID string) []*discordgo.Message {
+func listMessages(s *discordgo.Session, channelID string) []*discordgo.Message {
 	messages, _ := s.ChannelMessages(channelID, 100, "", "", "")
 	return messages
 }
 
-func getUserStatus(s *discordgo.Session) []*discordgo.User {
+func getUsers(s *discordgo.Session) []*discordgo.Member {
 	for _, guild := range getGuilds(s) {
 		values, _ := s.State.Guild(guild.ID)
-		for _, val := range values.Members {
-			fmt.Println(val)
-		}
+		return values.Members
+	}
+	return nil
+}
+
+func getStatus(s *discordgo.Session) []*discordgo.User {
+	var mutex = &sync.Mutex{}
+	members := getUsers(s)
+	for _, guild := range getGuilds(s) {
+		go func() {
+			for _, member := range members {
+				user := member.User
+				mutex.Lock()
+				pres, err := s.State.Presence(guild.ID, user.ID)
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println(user.ID, user.Username, pres.Status, pres.Game)
+
+				mutex.Unlock()
+			}
+
+		}()
 	}
 	return nil
 }
