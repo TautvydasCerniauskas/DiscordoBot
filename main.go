@@ -22,6 +22,15 @@ func main() {
 		fmt.Println("Failed to create discord session", err)
 	}
 
+	guilds, err := d.UserGuilds(100, "", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	userInfo, err := d.User("@me")
+	if err != nil {
+		log.Fatal(err)
+	}
+	d.AddHandler(listMessages)
 	d.AddHandler(handleCmd)
 	err = d.Open()
 	if err != nil {
@@ -32,4 +41,11 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 	d.Close()
+}
+
+func listMessages(s *discordgo.Session, m *discordgo.MessageCreate) {
+	messages, _ := s.ChannelMessages(m.ChannelID, 100, "", "", "")
+	for i := 0; i < len(messages); i++ {
+		fmt.Println(messages[i].Content)
+	}
 }
