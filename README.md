@@ -5,8 +5,10 @@
 ### Currently only takes 3 simple commands
 
 ### TODO 
-* [] Shows games played by the users
+* [X] Shows games played by the users
 * [] Ban user/s
-* [] Show user details
+* [X] Show user details
 * [] Give permissions
 * [] Timeout user
+
+Both above completed tasks are kinda done, just need to make things look pretty

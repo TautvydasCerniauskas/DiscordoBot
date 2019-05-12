@@ -28,15 +28,12 @@ func main() {
 	if err != nil {
 		fmt.Println("Unable to establish connection", err)
 	}
-
-	// messages := listMessages(d, &discordgo.MessageCreate{}, channels[4].ID)
-	// for i := 0; i < len(messages); i++ {
-	// 	fmt.Println(messages[i].Content)
+	//
+	// messages := listMessages(d, channels[4].ID)
+	// for i := len(messages) - 1; i >= 0; i-- {
+	// 	fmt.Println(i, messages[i].Content)
 	// }
 	getUsers(d)
-	// for _, i := range users {
-	// 	fmt.Println(i)
-	// }
 	getStatus(d)
 	fmt.Println("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
