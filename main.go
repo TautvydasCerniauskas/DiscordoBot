@@ -11,22 +11,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Channel struct ChannelType int
-type Channel struct {
-	// The ID of the channel.
-	ID string `json:"id"`
-
-	// The ID of the guild to which the channel belongs, if it is in a guild.
-	// Else, this ID is empty (e.g. DM channels).
-	GuildID string `json:"guild_id"`
-
-	// The name of the channel.
-	Name string `json:"name"`
-
-	// The type of the channel.
-	Type discordgo.ChannelType `json:"type"`
-}
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -37,22 +21,15 @@ func main() {
 	if err != nil {
 		fmt.Println("Failed to create discord session", err)
 	}
-	m := &discordgo.MessageCreate{}
-	u := &discordgo.User{}
-
-	getUserStatus(d, m, u)
 
 	d.AddHandler(handleCmd)
+	channels := getChannels(d)
 	err = d.Open()
 	if err != nil {
 		fmt.Println("Unable to establish connection", err)
 	}
-	channels := getSliceOfStructs(d)
-	for i := range channels {
-		chaan := channels[i]
-		fmt.Println(*chaan)
-	}
-	messages := listMessages(d, m, channels[4].ID)
+
+	messages := listMessages(d, channels[4].ID)
 	for i := 0; i < len(messages); i++ {
 		fmt.Println(messages[i].Content)
 	}
@@ -63,35 +40,27 @@ func main() {
 	d.Close()
 }
 
-func getSliceOfStructs(d *discordgo.Session) []*Channel {
-	chnls := []*Channel{}
-	guilds, err := d.UserGuilds(100, "", "")
+func getGuilds(s *discordgo.Session) []*discordgo.UserGuild {
+	guilds, err := s.UserGuilds(100, "", "")
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, guild := range guilds {
-		fmt.Println(guild.ID, guild.Name)
-		channels, err := d.GuildChannels(guild.ID)
+	return guilds
+}
+
+func getChannels(s *discordgo.Session) []*discordgo.Channel {
+	for _, guild := range getGuilds(s) {
+		channels, err := s.GuildChannels(guild.ID)
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, chaan := range channels {
-			tempChan := new(Channel)
-			tempChan.ID = chaan.ID
-			tempChan.GuildID = chaan.GuildID
-			tempChan.Name = chaan.Name
-			tempChan.Type = chaan.Type
-			// fmt.Println(chaan.ID, chaan.Name, chaan.Type, chaan.Messages)
-			chnls = append(chnls, tempChan)
-
-		}
+		return channels
 	}
-	return chnls
+	return nil
 }
 
-func listMessages(s *discordgo.Session, m *discordgo.MessageCreate, channelID string) []*discordgo.Message {
+func listMessages(s *discordgo.Session, channelID string) []*discordgo.Message {
 	messages, _ := s.ChannelMessages(channelID, 100, "", "", "")
-
 	return messages
 }
 
