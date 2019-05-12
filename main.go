@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
@@ -79,23 +78,16 @@ func getUsers(s *discordgo.Session) []*discordgo.Member {
 }
 
 func getStatus(s *discordgo.Session) []*discordgo.User {
-	var mutex = &sync.Mutex{}
 	members := getUsers(s)
 	for _, guild := range getGuilds(s) {
-		go func() {
-			for _, member := range members {
-				user := member.User
-				mutex.Lock()
-				pres, err := s.State.Presence(guild.ID, user.ID)
-				if err != nil {
-					log.Fatal(err)
-				}
-				fmt.Println(user.ID, user.Username, pres.Status, pres.Game)
-
-				mutex.Unlock()
+		for _, member := range members {
+			user := member.User
+			pres, _ := s.State.Presence(guild.ID, user.ID)
+			if pres != nil {
+				fmt.Println(user.Username, user.ID, pres.Status, pres.Game)
 			}
+		}
 
-		}()
 	}
 	return nil
 }
