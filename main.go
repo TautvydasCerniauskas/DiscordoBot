@@ -23,17 +23,18 @@ func main() {
 	}
 
 	d.AddHandler(handleCmd)
-	// channels := getChannels(d)
+	channels := getChannels(d)
 	err = d.Open()
 	if err != nil {
 		fmt.Println("Unable to establish connection", err)
 	}
-	//
+
 	// messages := listMessages(d, channels[4].ID)
 	// for i := len(messages) - 1; i >= 0; i-- {
-	// 	fmt.Println(i, messages[i].Content)
+	// 	fmt.Println(i, messages[i].Content, messages[i].Author)
 	// }
-	getUsers(d)
+	listMessages(d, channels[4].ID)
+	// getUsers(d)
 	getStatus(d)
 	fmt.Println("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
@@ -63,6 +64,9 @@ func getChannels(s *discordgo.Session) []*discordgo.Channel {
 
 func listMessages(s *discordgo.Session, channelID string) []*discordgo.Message {
 	messages, _ := s.ChannelMessages(channelID, 100, "", "", "")
+	for i, message := range messages {
+		fmt.Println(i, message.Content, message.Type)
+	}
 	return messages
 }
 
@@ -82,6 +86,10 @@ func getStatus(s *discordgo.Session) []*discordgo.User {
 			pres, _ := s.State.Presence(guild.ID, user.ID)
 			if pres != nil {
 				fmt.Println(user.Username, user.ID, pres.Status, pres.Game)
+				if pres.Game != nil {
+					games := pres.Game
+					fmt.Println(user.Username, user.ID, pres.Status, games.Name)
+				}
 			}
 		}
 
